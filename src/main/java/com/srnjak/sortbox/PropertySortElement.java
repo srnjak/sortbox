@@ -12,10 +12,10 @@ import java.util.Locale;
  * 
  * @author Grega Krajnc
  *
- * @param <T> Type of sorted object
+ * @param <O> Type of sorted object
  */
-public class PropertySortElement<T> 
-		implements SortElement<T> {
+public class PropertySortElement<O>
+		implements SortElement<O> {
 	
 	/**
 	 * serialVersionUID
@@ -144,7 +144,7 @@ public class PropertySortElement<T>
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public int compare(T o1, T o2) {
+	public int compare(O o1, O o2) {
 		
 		Object o1Value;
 		Object o2Value;

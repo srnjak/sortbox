@@ -123,7 +123,7 @@ public class ComparatorSortElement<T>
 		int result = getSortBy().compare(o1, o2);
 		
 		if (SortOrder.DESCENDING.equals(getSortOrder())) {
-			result = 0 - result;
+			result = -result;
 		} // end if
 		
 		return result;

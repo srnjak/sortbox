@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 /**
  * Holder of SortElements.
@@ -21,6 +23,17 @@ public class SortBox<O, C extends Comparator<O>>
 	 * serialVersionUID
 	 */
 	private static final long serialVersionUID = 1L;
+
+	public static <O, C extends Comparator<O>>
+	Collector<C, ?, ? extends SortBox<O, C>> collector() {
+		return Collector.of(
+				SortBox::new,
+				SortBox::addSortElement,
+				(left, right) -> {
+					left.addAll(right);
+					return left;
+				});
+	}
 	
 	/**
 	 * List of SortElements
@@ -46,6 +59,20 @@ public class SortBox<O, C extends Comparator<O>>
 		remove(sortElement);
 		
 		sortList.add(sortElement);
+	} // end addSortElement()
+
+	/**
+	 * Adds all SortElements from the given sortBox.
+	 *
+	 * @param sortBox
+	 */
+	public void addAll(SortBox<O, C> sortBox) {
+		/*
+		 * If properties already exists in the sortList, we remove it first.
+		 */
+		removeAll(sortBox);
+
+		sortList.addAll(sortBox.sortList);
 	} // end addSortElement()
 	
 	/**
@@ -79,7 +106,17 @@ public class SortBox<O, C extends Comparator<O>>
 	 */
 	public void remove(Comparator<O> comparator) {
 		sortList.remove(comparator);
- 	} // end remove() 
+ 	} // end remove()
+
+	/**
+	 * Removes all comparators from SortBox which are members
+	 * of the given sortBox.
+	 *
+	 * @param sortBox
+	 */
+	public void removeAll(SortBox<O, C> sortBox) {
+		sortList.removeAll(sortBox.sortList);
+	} // end remove()
 	
 	/**
 	 * Clears SortElements from the SortBox.
@@ -105,6 +142,16 @@ public class SortBox<O, C extends Comparator<O>>
 	public int size() {
 		return this.sortList.size();
 	} // end size()
+
+	/**
+	 * Returns sort element at a specified index.
+	 *
+	 * @param index The specified index.
+	 * @return The sort element
+	 */
+	public C get(int index) {
+		return this.sortList.get(index);
+	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object
@@ -112,23 +159,23 @@ public class SortBox<O, C extends Comparator<O>>
 	 */
 	@Override
 	public String toString() {
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
-		
+
 		int i = 0;
 		for (C p : sortList) {
 			if (i > 0) {
 				sb.append(",");
 			} // end if
-			
+
 			sb.append(p.toString());
-			
+
 			i++;
 		} // end for
-		
+
 		sb.append("]");
-		
+
 		return sb.toString();
 	} // end toString()
 
@@ -139,7 +186,14 @@ public class SortBox<O, C extends Comparator<O>>
 	public Iterator<C> iterator() {
 		return sortList.iterator();
 	} // end iterator()
-	
+
+	/**
+	 * @return stream of sort elements
+	 */
+	public Stream<C> stream() {
+		return sortList.stream();
+	}
+
 	/**
 	 * Compares its two arguments for order.
 	 * 
