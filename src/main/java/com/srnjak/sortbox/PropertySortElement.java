@@ -7,6 +7,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
 import java.util.Locale;
 
+import static com.srnjak.sortbox.SortOrder.ASCENDING;
+import static com.srnjak.sortbox.SortOrder.DESCENDING;
+
 /**
  * Sort elements, which holds data about which property to sort and ordering.
  * 
@@ -90,7 +93,7 @@ public class PropertySortElement<O>
 	 */
 	@Override
 	public boolean isAscending() {
-		return (SortOrder.ASCENDING.equals(this.sortPair.getRight()));
+		return (ASCENDING.equals(this.sortPair.getRight()));
 	} // end isAscending()
 	
 	/* (non-Javadoc)
@@ -101,6 +104,22 @@ public class PropertySortElement<O>
 	public boolean isDescending() {
 		return (SortOrder.DESCENDING.equals(this.sortPair.getRight()));
 	} // end isDescending()
+
+	/**
+	 * @return new instance of {@link PropertySortElement} with
+	 * the opposite sort order.
+	 */
+	public PropertySortElement<O> reverse() {
+
+		SortOrder order;
+		if (ASCENDING.equals(this.getSortOrder())) {
+			order = DESCENDING;
+		} else {
+			order = ASCENDING;
+		}
+
+		return new PropertySortElement<>(this.getSortBy(), order);
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object

@@ -133,6 +133,15 @@ public class BeanSortBox<O>
 	}
 
 	/**
+	 * @return new {@link BeanSortBox} instance with the opposite sort order.
+	 */
+	public BeanSortBox<O> reverse() {
+		return this.stream()
+				.map(PropertySortElement::reverse)
+				.collect(BeanSortBox.collector());
+	}
+
+	/**
 	 * Verifies, if SortBox contains given sortElement.
 	 *
 	 * @param sortElement

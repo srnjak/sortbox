@@ -6,6 +6,7 @@ import com.srnjak.sortbox.SortOrder;
 import com.srnjak.sortbox.bean.SortReader;
 import com.srnjak.sortbox.bean.SortWriter;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -45,7 +46,11 @@ public class CompactSort<O>
     }
 
     @Override
-    public BeanSortBox<O> read(@NonNull String sortListString) {
+    public BeanSortBox<O> read(String sortListString) {
+
+        if (StringUtils.isBlank(sortListString)) {
+            return new BeanSortBox<>();
+        }
 
         if (!isValid(sortListString)) {
             throw new IllegalArgumentException(sortListString);
