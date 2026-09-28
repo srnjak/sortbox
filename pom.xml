@@ -48,7 +48,7 @@
     <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
-      <version>1.9.4</version>
+      <version>1.11.0</version>
       <exclusions>
         <!-- Exclude commons-collections due to CVE issue -->
         <!-- https://devhub.checkmarx.com/cve-details/Cx78f40514-81ff/ -->
