@@ -56,9 +56,14 @@ jobs:
           echo 'CENTRAL_PASSWORD_PARAM=${{ secrets.CENTRAL_PASSWORD_PARAM }}' >> $GITHUB_ENV
 
       - name: Deploy with Maven
+        # maven-gpg-plugin 3.x reads the passphrase from the environment.
+        # Passing it as -Dgpg.passphrase is warned about today and will be
+        # rejected by a future release.
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           echo ${{ secrets.GPG_PRIVATE_KEY }} | base64 --decode | gpg --batch --import
-          mvn -B deploy -s mvn-settings.xml -DskipTests -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
+          mvn -B deploy -s mvn-settings.xml -DskipTests
 
   release:
     needs: build
@@ -96,8 +101,10 @@ jobs:
           mvn -B scm:checkin -s mvn-settings.xml -Dmessage="[release] Release version prepared."
   
       - name: Publish to Maven Central
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          mvn -B clean scm:tag deploy -s mvn-settings.xml -P central -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
+          mvn -B clean scm:tag deploy -s mvn-settings.xml -P central
   
       - name: Prepare Next Snapshot Version
         run: |
