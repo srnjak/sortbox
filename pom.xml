@@ -35,6 +35,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>17</java.version>
   </properties>
 
   <dependencies>
@@ -98,10 +99,43 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.6.3</version>
+        <dependencies>
+          <dependency>
+            <!-- enforceBytecodeVersion lives here, not in the plugin. -->
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>extra-enforcer-rules</artifactId>
+            <version>1.12.1</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>enforce-bytecode-version</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <!-- release governs the JDK APIs this code may call; it
+                     does not look at what the dependencies were compiled
+                     for. Without this rule a dependency built for a newer
+                     JDK builds green here and fails at class load in the
+                     consumer's JVM. -->
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>${java.version}</maxJdkVersion>
+                </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.16.0</version>
         <configuration>
-          <release>17</release>
+          <release>${java.version}</release>
         </configuration>
       </plugin>
       <plugin>
