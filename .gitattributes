@@ -1,0 +1,3 @@
+# Normalize line endings: the repository was a mix of CRLF and LF, and
+# an editor rewriting a file could silently change every line of it.
+* text=auto eol=lf
