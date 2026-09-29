@@ -105,6 +105,7 @@ jobs:
           # keeps pointing at the previous release forever, so rewrite the
           # line following sortbox's artifactId with the one being released.
           sed -i "/<artifactId>sortbox<\/artifactId>/{n;s|<version>.*</version>|<version>$VERSION</version>|}" README.md
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
           mvn -B scm:checkin -s mvn-settings.xml -Dmessage="[release] Release version prepared."
   
       - name: Publish to Maven Central
@@ -112,6 +113,45 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           mvn -B clean scm:tag deploy -s mvn-settings.xml -P central
+
+      # scm:tag pushes a tag, which on its own shows up nowhere on the
+      # repository page. Turn it into a release, with the jars attached as
+      # the first release carried them.
+      - name: Create GitHub release
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const tag = `v${process.env.RELEASE_VERSION}`;
+
+            let release;
+            try {
+              release = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag,
+                name: tag,
+                generate_release_notes: true,
+              });
+            } catch (error) {
+              if (error.status === 422) {
+                core.warning(`A release for ${tag} already exists, leaving it alone.`);
+                return;
+              }
+              throw error;
+            }
+
+            const jars = fs.readdirSync('target').filter(f => f.endsWith('.jar'));
+            for (const jar of jars) {
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.data.id,
+                name: jar,
+                data: fs.readFileSync(`target/${jar}`),
+              });
+            }
+            core.info(`Published ${tag} with ${jars.length} assets.`);
   
       - name: Prepare Next Snapshot Version
         run: |
