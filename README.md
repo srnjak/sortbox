@@ -13,10 +13,7 @@ repository, reverse, or send to another layer.
 
 ## Requirements
 
-| SortBox | Java |
-|---|---|
-| 3.x | 17 or newer |
-| 2.x | 11 or newer |
+Java 17 or newer.
 
 ## Installation
 
