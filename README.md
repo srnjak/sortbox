@@ -110,6 +110,105 @@ Root<Person> root = query.from(Person.class);
 query.orderBy(CriteriaOrderWriter.forRoot(root, em).write(sort));
 ```
 
+### A worked example
+
+The case this library is built for: a client asks for an order in a query
+parameter — `GET /people?sort=lastName,-address.city` — and a repository turns
+that into a database ordering, without either side knowing about the other.
+
+```java
+@Entity
+public class Person {
+    @Id private Long id;
+    private String firstName;
+    private String lastName;
+    @ManyToOne private Address address;
+    // getters
+}
+```
+
+```java
+public class PersonRepository {
+
+    private static final CompactSort<Person> COMPACT = new CompactSort<>();
+
+    private static final Set<String> SORTABLE =
+            Set.of("firstName", "lastName", "address.city");
+
+    private final EntityManager em;
+
+    public PersonRepository(EntityManager em) {
+        this.em = em;
+    }
+
+    public List<Person> find(String sort) {
+
+        String orderBy = new JpqlOrderByWriter<Person>().write(parse(sort));
+
+        return em.createQuery(
+                        "SELECT p FROM Person p" + orderBy, Person.class)
+                .getResultList();
+    }
+
+    public List<Person> findWithCriteria(String sort) {
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Person> query = cb.createQuery(Person.class);
+        Root<Person> root = query.from(Person.class);
+
+        query.select(root).orderBy(
+                CriteriaOrderWriter.forRoot(root, em).write(parse(sort)));
+
+        return em.createQuery(query).getResultList();
+    }
+
+    private BeanSortBox<Person> parse(String sort) {
+
+        BeanSortBox<Person> order = COMPACT.read(sort);
+
+        order.stream()
+                .map(PropertySortElement::getSortBy)
+                .filter(p -> !SORTABLE.contains(p))
+                .findFirst()
+                .ifPresent(p -> {
+                    throw new IllegalArgumentException("Not sortable: " + p);
+                });
+
+        if (order.isEmpty()) {
+            order.addSortElement("lastName", SortOrder.ASCENDING);
+        }
+
+        return order;
+    }
+}
+```
+
+What that gives you:
+
+| request | resulting order |
+|---|---|
+| `?sort=lastName,-address.city` | ` ORDER BY lastName ASC, address.city DESC` |
+| no `sort` parameter | ` ORDER BY lastName ASC` — the default |
+| `?sort=password` | `IllegalArgumentException: Not sortable: password` |
+| `?sort=drop table` | `IllegalArgumentException` from `CompactSort`, on the grammar |
+
+Two things in that repository are worth copying, not just the happy path.
+
+**The whitelist.** The JPQL writer puts the property name into the query
+string, so the set of sortable properties belongs to the server, never to the
+caller. This is not about injection — `CompactSort` only accepts Java
+identifier characters and dots, so quotes, spaces and parentheses never get
+through — but about a well-formed name for a property that does not exist,
+which fails deep in the persistence provider with a confusing message. Reject
+it where you can still explain it.
+
+**The default.** `read` returns an *empty* box for blank input, and an empty
+box writes an empty `ORDER BY`, which means an unordered result. If your
+pagination assumes a stable order, give the box a default before using it.
+
+`address.city` works in both writers: JPQL takes the dotted path as it is, and
+`CriteriaOrderWriter` walks it into `root.get("address").get("city")`.
+
 ## Comparators instead of properties
 
 `BeanSortBox` is the convenient case. Underneath it is `SortBox`, which holds
