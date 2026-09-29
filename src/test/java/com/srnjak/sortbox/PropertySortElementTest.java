@@ -10,6 +10,8 @@ import java.util.List;
 import static com.srnjak.sortbox.SortOrder.ASCENDING;
 import static com.srnjak.sortbox.SortOrder.DESCENDING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PropertySortElementTest {
 
@@ -106,6 +108,23 @@ class PropertySortElementTest {
         assertEquals(0, tut.compare(
                 new Person("Alice", 31, "Maribor"),
                 new Person("Alice", 19, "Celje")));
+    }
+
+    @Test
+    public void compare_Throws_RuntimeException_When_Property_Is_Unknown() {
+
+        PropertySortElement<Person> tut =
+                new PropertySortElement<>("nope", ASCENDING);
+
+        List<Person> list = people();
+
+        // Not merely "throws something": excluding commons-collections
+        // from BeanUtils made this path fail with NoClassDefFoundError,
+        // an Error that no caller catches.
+        RuntimeException e = assertThrows(
+                RuntimeException.class, () -> list.sort(tut));
+
+        assertTrue(e.getMessage().contains("nope"), e.getMessage());
     }
 
     @Test
