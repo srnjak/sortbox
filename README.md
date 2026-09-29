@@ -227,12 +227,12 @@ Both implement `Comparator`, and both are `Iterable` over their elements.
 treated as greater than any non-null one, and the descending case inverts that
 along with everything else.
 
-**The same property can be added twice with different orders.** Adding a
-property that is already present replaces it only if the *order matches too*,
-so `name` ascending followed by `name` descending leaves **both** entries in
-the box — writing out as `name,-name`. The second one never has any effect,
-since the first already decided every comparison. Check before adding if your
-input can contain duplicates.
+**Adding a property twice replaces it.** `name` ascending followed by `name`
+descending leaves one entry, descending — the later call wins. The replacement
+goes to the end of the box, so re-adding a property also moves it to lowest
+priority; `addSortElementHead` moves it to highest instead. The same holds for
+`addAll`, and for `SortBox` with comparators, where the comparator instance
+takes the place of the property name.
 
 **A property that does not exist throws.** Comparison wraps the BeanUtils
 reflection failure in a `RuntimeException`. If the property names come from
