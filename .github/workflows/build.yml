@@ -98,6 +98,13 @@ jobs:
       - name: Prepare Release Version
         run: |
           mvn -B versions:set -s mvn-settings.xml -DremoveSnapshot=true
+          VERSION=$(mvn -B -q -s mvn-settings.xml \
+            org.apache.maven.plugins:maven-help-plugin:3.5.2:evaluate \
+            -Dexpression=project.version -DforceStdout)
+          # The install snippet in the README names a version. Left alone it
+          # keeps pointing at the previous release forever, so rewrite the
+          # line following sortbox's artifactId with the one being released.
+          sed -i "/<artifactId>sortbox<\/artifactId>/{n;s|<version>.*</version>|<version>$VERSION</version>|}" README.md
           mvn -B scm:checkin -s mvn-settings.xml -Dmessage="[release] Release version prepared."
   
       - name: Publish to Maven Central

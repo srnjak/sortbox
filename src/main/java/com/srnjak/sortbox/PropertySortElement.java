@@ -169,7 +169,7 @@ public class PropertySortElement<O>
 		Object o2Value;
 		try {
 			o1Value = PropertyUtils.getProperty(o1, getSortBy());
-			o2Value = PropertyUtils.getProperty(o1, getSortBy());
+			o2Value = PropertyUtils.getProperty(o2, getSortBy());
 		} catch (IllegalArgumentException
 				| IllegalAccessException
 				| InvocationTargetException

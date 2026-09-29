@@ -49,15 +49,10 @@
     <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
+      <!-- commons-collections is deliberately NOT excluded here.
+           BeanUtils needs it at runtime, and the version it pulls, 3.2.2,
+           is the release that fixed the deserialization vulnerability. -->
       <version>1.11.0</version>
-      <exclusions>
-        <!-- Exclude commons-collections due to CVE issue -->
-        <!-- https://devhub.checkmarx.com/cve-details/Cx78f40514-81ff/ -->
-        <exclusion>
-          <groupId>commons-collections</groupId>
-          <artifactId>commons-collections</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>

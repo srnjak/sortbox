@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
@@ -56,10 +57,33 @@ public class SortBox<O, C extends Comparator<O>>
 		/*
 		 * If property already exists in the sortList, we remove it first.
 		 */
-		remove(sortElement);
+		removeSameSortBy(sortElement);
 		
 		sortList.add(sortElement);
 	} // end addSortElement()
+
+	/**
+	 * Removes any element sorting by the same thing as the given one,
+	 * whatever its sort order, so that adding a property twice replaces
+	 * it rather than leaving a second entry that can never take effect.
+	 *
+	 * Elements which are not SortElements have no sortBy to compare, so
+	 * for those this falls back to removal by equality.
+	 *
+	 * @param sortElement the element about to be added
+	 */
+	private void removeSameSortBy(C sortElement) {
+
+		if (!(sortElement instanceof SortElement)) {
+			remove(sortElement);
+			return;
+		} // end if
+
+		Object sortBy = ((SortElement<?>) sortElement).getSortBy();
+
+		sortList.removeIf(e -> e instanceof SortElement
+				&& Objects.equals(((SortElement<?>) e).getSortBy(), sortBy));
+	} // end removeSameSortBy()
 
 	/**
 	 * Adds all SortElements from the given sortBox.
@@ -70,7 +94,7 @@ public class SortBox<O, C extends Comparator<O>>
 		/*
 		 * If properties already exists in the sortList, we remove it first.
 		 */
-		removeAll(sortBox);
+		sortBox.sortList.forEach(this::removeSameSortBy);
 
 		sortList.addAll(sortBox.sortList);
 	} // end addSortElement()
@@ -84,7 +108,7 @@ public class SortBox<O, C extends Comparator<O>>
 		/*
 		 * If property already exists in the sortList, we remove it first.
 		 */
-		remove(sortElement);
+		removeSameSortBy(sortElement);
 		
 		sortList.add(0, sortElement);
 	} // end addSortElementHead()
