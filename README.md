@@ -21,7 +21,7 @@ Java 17 or newer.
 <dependency>
   <groupId>com.srnjak</groupId>
   <artifactId>sortbox</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1</version>
 </dependency>
 ```
 
