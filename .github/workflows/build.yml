@@ -105,6 +105,13 @@ jobs:
           # keeps pointing at the previous release forever, so rewrite the
           # line following sortbox's artifactId with the one being released.
           sed -i "/<artifactId>sortbox<\/artifactId>/{n;s|<version>.*</version>|<version>$VERSION</version>|}" README.md
+          # The sed above depends on the snippet's shape, so a README edit
+          # could silently turn it into a no-op and publish a stale version.
+          # Fail the release instead.
+          if ! grep -A1 '<artifactId>sortbox</artifactId>' README.md | grep -q "<version>$VERSION</version>"; then
+            echo "::error::The README install snippet was not updated to $VERSION; its structure must have changed, so fix the sed above."
+            exit 1
+          fi
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
           mvn -B scm:checkin -s mvn-settings.xml -Dmessage="[release] Release version prepared."
   
